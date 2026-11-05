@@ -5,24 +5,20 @@ This is a synthetic GPU test, not an Iris/Minecraft integration test.
 """
 import os
 os.environ.setdefault('PYOPENGL_PLATFORM', 'egl')
-import re
 from pathlib import Path
+from shader_sources import expand_shader, shader_files
 import numpy as np
 import moderngl
 from OpenGL import GL
 
 ROOT = Path(__file__).resolve().parents[1] / 'shaders'
+shader_files(ROOT)
 W, H = 128, 64
 ctx = moderngl.create_standalone_context(backend='egl', require=210)
 print('OpenGL:', ctx.info['GL_VERSION'], '/', ctx.info['GL_RENDERER'])
 
 def expand(path, settings=None):
-    source = path.read_text()
-    source = re.sub(r'^\s*#include\s+"([^"]+)"\s*$',
-                    lambda m: expand(ROOT / m[1].lstrip('/'), settings), source, flags=re.M)
-    for name, value in (settings or {}).items():
-        source = re.sub(r'(#define\s+' + name + r')\s+\S+', r'\g<1> ' + str(value), source)
-    return source
+    return expand_shader(path, ROOT, settings)
 
 def program(name, settings=None):
     return ctx.program(vertex_shader=expand(ROOT / (name + '.vsh'), settings),
