@@ -1,0 +1,8 @@
+#define REFLECTION_STEPS 32 // [16 32 64]
+#define REFLECTION_STRENGTH 0.8 // [0.4 0.6 0.8 1.0]
+#define HAND_LIGHT 1.0 // [0.0 0.5 1.0 1.5]
+#define EXPOSURE 1.0 // [0.7 1.0 1.3]
+#define BLOOM_STRENGTH 0.65 // [0.0 0.35 0.65 1.0 1.5]
+#define MOTION_BLUR 0.5 // [0.0 0.25 0.5 0.75 1.0]
+#define TEXTURE_DEPTH 0.65 // [0.0 0.35 0.65 1.0]
+#define AO_STRENGTH 0.45 // [0.0 0.25 0.45 0.65]
