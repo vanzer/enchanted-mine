@@ -66,6 +66,18 @@ def main() -> int:
     compiler = args.validator or shutil.which('glslangValidator') or shutil.which('glslang')
     if not compiler:
         parser.error('install glslangValidator or pass --validator PATH')
+    # Iris selects a dimension directory as a complete program set; it does
+    # not fall back to individual programs from the root. A missing wrapper
+    # silently drops that pass in the affected dimension.
+    stage_extensions = {'.vsh', '.fsh', '.gsh', '.tcs', '.tes', '.csh'}
+    root_stages = {p.name for p in SHADERS.iterdir()
+                   if p.is_file() and p.suffix in stage_extensions}
+    for directory in sorted(p for p in SHADERS.iterdir()
+                            if p.is_dir() and re.fullmatch(r'world-?\d+', p.name)):
+        present = {p.name for p in directory.iterdir() if p.is_file()}
+        missing_stages = sorted(root_stages - present)
+        if missing_stages:
+            raise ValueError(f'{directory.name}: missing root program stages: ' + ', '.join(missing_stages))
     entries = sorted(SHADERS.rglob('*.vsh')) + sorted(SHADERS.rglob('*.fsh'))
     # Include libraries are not independently compilable shader programs.
     entries = [p for p in entries if 'lib' not in p.relative_to(SHADERS).parts]

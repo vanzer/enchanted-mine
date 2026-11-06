@@ -12,7 +12,7 @@ uniform int heldBlockLightValue;
 uniform int heldBlockLightValue2;
 uniform float frameTimeCounter;
 uniform mat4 gbufferModelViewInverse;
-#if SHADOWS == 1 && (defined(TERRAIN) || defined(WATER))
+#if SHADOWS == 1 && (defined(TERRAIN) || defined(WATER)) && !defined(DIM_NETHER) && !defined(DIM_END)
 uniform sampler2D shadowtex0;
 uniform mat4 shadowModelView;
 uniform mat4 shadowProjection;
@@ -63,7 +63,7 @@ void main() {
     }
 #endif
     vec3 illumination = texture2D(lightmap, lm).rgb;
-#if SHADOWS == 1 && (defined(TERRAIN) || defined(WATER))
+#if SHADOWS == 1 && (defined(TERRAIN) || defined(WATER)) && !defined(DIM_NETHER) && !defined(DIM_END)
     // The vanilla lightmap already contains block and ambient light. Apply the
     // occlusion primarily where skylight is available; keep hand light separate.
     float sky = smoothstep(0.2, 0.95, lm.y);
@@ -78,5 +78,6 @@ void main() {
 #endif
     base.rgb *= max(illumination, vec3(0.025));
     gl_FragData[0] = base;
-    gl_FragData[1] = vec4(n * 0.5 + 0.5, reflectivity);
+    // Alpha zero is reserved for pixels with no surface data in colortex1.
+    gl_FragData[1] = vec4(n * 0.5 + 0.5, 0.01 + 0.99 * clamp(reflectivity, 0.0, 1.0));
 }
