@@ -1,2 +1,3 @@
 #version 120
-#include "/lib/sky_basic.vsh"
+varying vec4 tint;
+void main() { gl_Position = ftransform(); tint = gl_Color; }
