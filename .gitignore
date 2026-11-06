@@ -1,1 +1,13 @@
-dist/
+dist/*
+!dist/EnchantedMine.zip
+work/
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+.DS_Store
