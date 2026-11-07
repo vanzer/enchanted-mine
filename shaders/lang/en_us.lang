@@ -171,3 +171,6 @@ value.DH_SUPPORT.1=On
 value.SHADOW_FILTER.0=Single sample
 value.SHADOW_FILTER.1=PCF 3×3
 value.SHADOW_FILTER.2=PCF 5×5
+
+option.TAA_JITTER=TAA subpixel jitter
+option.TAA_JITTER.comment=Disabled by default for a stable image. Enabling shifts raster samples between frames.

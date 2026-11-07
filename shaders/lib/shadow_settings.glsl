@@ -6,4 +6,5 @@
 #define SHADOW_FILTER 2 // [0 1 2]
 const int shadowMapResolution = 2048; // [1024 2048 4096]
 const float shadowDistance = 128.0; // [64.0 128.0 192.0 256.0]
+const bool shadowtex0Nearest = true;
 #endif

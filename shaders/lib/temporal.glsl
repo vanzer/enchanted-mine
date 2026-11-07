@@ -2,7 +2,7 @@
 #define ENCHANTED_TEMPORAL
 #include "/lib/settings.glsl"
 vec2 enchantedJitter(int frame) {
-#if TAA == 1
+#if TAA == 1 && TAA_JITTER == 1
     int index = int(mod(float(frame), 8.0));
     if (index == 0) return vec2(0.0, -0.16666667);
     if (index == 1) return vec2(-0.25, 0.16666667);
