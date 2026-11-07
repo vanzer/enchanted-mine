@@ -2,7 +2,6 @@ uniform vec3 sunPosition;
 uniform vec3 fogColor;
 uniform mat4 gbufferModelViewInverse;
 uniform float rainStrength;
-#include "/lib/clouds.glsl"
 uniform vec3 cameraPosition;
 uniform float frameTimeCounter;
 varying vec4 skyVertexColor;
@@ -22,10 +21,6 @@ void main() {
 #if !defined(DIM_NETHER) && !defined(DIM_END)
     float glow = pow(max(dot(viewDir, sunDir), 0.0), 64.0) * sunVisible * skyBrightness;
     color += vec3(0.22, 0.13, 0.06) * glow;
-#if PROCEDURAL_CLOUDS == 1
-    color = enchantedClouds(color, worldDir, normalize(mat3(gbufferModelViewInverse) * sunDir),
-                            cameraPosition, frameTimeCounter, rainStrength, fogColor);
-#endif
 #endif
     gl_FragData[0] = vec4(color, skyVertexColor.a);
 }

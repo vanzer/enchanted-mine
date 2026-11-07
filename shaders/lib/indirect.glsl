@@ -1,7 +1,7 @@
 // Optional screen-space lighting approximations. These cannot see geometry
 // hidden from the camera, so neither effect is a replacement for full GI.
-#define INDIRECT_STRENGTH 0.0 // [0.0 0.1 0.2 0.35]
-#define CONTACT_SHADOW_STRENGTH 0.0 // [0.0 0.15 0.3 0.5]
+#define INDIRECT_STRENGTH 0.2 // [0.0 0.1 0.2 0.35]
+#define CONTACT_SHADOW_STRENGTH 0.15 // [0.0 0.15 0.3 0.5]
 
 vec3 indirectViewPosition(vec2 uv, float depth, mat4 projectionInverse) {
     vec4 view = projectionInverse * vec4(uv * 2.0 - 1.0, depth * 2.0 - 1.0, 1.0);
@@ -42,7 +42,7 @@ vec3 indirectBounce(vec2 uv, vec3 position, vec3 normal,
         float facing = max(dot(normal, direction), 0.0)
                      * max(dot(sampleNormal, -direction), 0.0);
         float falloff = 1.0 - smoothstep(0.0, radius * radius, distanceSquared);
-        vec3 source = pow(max(texture2D(colorBuffer, sampleUV).rgb, vec3(0.0)), vec3(2.2));
+        vec3 source = max(texture2D(colorBuffer, sampleUV).rgb, vec3(0.0));
         bounce += min(source, vec3(1.0)) * facing * falloff;
     }
     // Fixed normalization avoids amplifying light when samples leave the frame.
