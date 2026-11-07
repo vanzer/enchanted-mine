@@ -22,16 +22,31 @@ uniform sampler2D shadowtex0;
 uniform mat4 shadowModelView;
 uniform mat4 shadowProjection;
 float surfaceShadow(vec3 position, vec3 surfaceNormal) {
-    vec4 world = gbufferModelViewInverse * vec4(position, 1.0);
+    // Use geometric normals here: texture bump/normal maps must not move the
+    // receiver below the real surface or modulate the self-shadow bias.
+    float facing = max(dot(surfaceNormal, normalize(shadowLightPosition)), 0.0);
+    float worldTexel = 2.0 * shadowDistance / float(shadowMapResolution);
+    float normalOffset = min(worldTexel * 0.4, 0.10) * (1.0 - facing * 0.5);
+    vec4 world = gbufferModelViewInverse * vec4(position + surfaceNormal * normalOffset, 1.0);
     vec4 clip = shadowProjection * shadowModelView * world;
     vec3 coord = clip.xyz / clip.w * 0.5 + 0.5;
     if (any(lessThanEqual(coord, vec3(0.0))) || any(greaterThanEqual(coord, vec3(1.0)))) return 1.0;
-    float facing = max(dot(surfaceNormal, normalize(shadowLightPosition)), 0.0);
-    float bias = mix(0.0012, 0.00025, facing);
+    float bias = 0.00015;
+    // Match each PCF tap to the receiver plane instead of comparing the
+    // centre depth against neighbours on a sloping surface (striped acne).
+    vec3 dx = dFdx(coord);
+    vec3 dy = dFdy(coord);
+    float determinant = dx.x * dy.y - dx.y * dy.x;
+    vec2 gradient = vec2(0.0);
+    if (abs(determinant) > 0.000000000001)
+        gradient = vec2(dy.y * dx.z - dx.y * dy.z,
+                        dx.x * dy.z - dy.x * dx.z) / determinant;
     float texel = SHADOW_SOFTNESS / float(shadowMapResolution);
     float visibility = 0.0;
 #if SHADOW_FILTER == 0
-    visibility = coord.z - bias <= texture2D(shadowtex0, coord.xy).r ? 1.0 : 0.0;
+    vec2 sampleCoord = (floor(coord.xy * float(shadowMapResolution)) + 0.5) / float(shadowMapResolution);
+    float receiver = coord.z + dot(gradient, sampleCoord - coord.xy);
+    visibility = receiver - bias <= texture2D(shadowtex0, sampleCoord).r ? 1.0 : 0.0;
 #else
     // A wider Gaussian PCF kernel softens edges without changing block lighting.
     float weightSum = 0.0;
@@ -39,8 +54,12 @@ float surfaceShadow(vec3 position, vec3 surfaceNormal) {
         for (int y = -SHADOW_FILTER; y <= SHADOW_FILTER; ++y) {
             vec2 offset = vec2(float(x), float(y));
             float weight = exp(-dot(offset, offset) * 0.5);
-            float closest = texture2D(shadowtex0, clamp(coord.xy + offset * texel, vec2(0.0), vec2(1.0))).r;
-            visibility += (coord.z - bias <= closest ? 1.0 : 0.0) * weight;
+            vec2 sampleCoord = (floor((coord.xy + offset * texel) * float(shadowMapResolution)) + 0.5)
+                             / float(shadowMapResolution);
+            sampleCoord = clamp(sampleCoord, vec2(0.0), vec2(1.0));
+            float closest = texture2D(shadowtex0, sampleCoord).r;
+            float receiver = coord.z + dot(gradient, sampleCoord - coord.xy);
+            visibility += (receiver - bias <= closest ? 1.0 : 0.0) * weight;
             weightSum += weight;
         }
     }
@@ -109,7 +128,8 @@ void main() {
                          mix(vec3(1.0, 0.56, 0.28), vec3(1.0, 0.89, 0.72), smoothstep(0.05, 0.6, worldSun.y)) * SUN_LIGHT, day);
     float visibility = 1.0;
 #if SHADOWS == 1 && !defined(HAND) && !defined(DIM_NETHER) && !defined(DIM_END)
-    visibility = mix(1.0, surfaceShadow(viewPos, n), SHADOW_STRENGTH);
+    vec3 geometricNormal = normalize(normal) * (gl_FrontFacing ? 1.0 : -1.0);
+    visibility = mix(1.0, surfaceShadow(viewPos, geometricNormal), SHADOW_STRENGTH);
 #endif
 #if !defined(DIM_NETHER) && !defined(DIM_END)
     visibility *= enchantedCloudShadow(relativeWorld + cameraPosition, worldLight, frameTimeCounter, rainStrength);

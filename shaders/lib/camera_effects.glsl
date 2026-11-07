@@ -124,7 +124,11 @@ vec3 applyMotionBlur(vec2 coord, vec3 source) {
 #if TAA == 1
     previousCoord += enchantedJitter(frameCounter - 1) / max(vec2(viewWidth, viewHeight), vec2(1.0));
 #endif
-    vec2 velocity = (coord - previousCoord) * MOTION_BLUR_STRENGTH;
+    // Raster sample offsets are not camera motion. A still camera must have
+    // zero shutter velocity even when optional temporal jitter is enabled.
+    vec2 rasterMotion = (enchantedJitter(frameCounter) - enchantedJitter(frameCounter - 1))
+                      / max(vec2(viewWidth, viewHeight), vec2(1.0));
+    vec2 velocity = (coord - previousCoord - rasterMotion) * MOTION_BLUR_STRENGTH;
     float speed = length(velocity);
     if (speed < 0.0001) return source;
     velocity *= min(1.0, 0.035 / speed);

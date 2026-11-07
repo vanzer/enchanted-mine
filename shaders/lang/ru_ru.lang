@@ -171,3 +171,6 @@ value.DH_SUPPORT.1=Вкл.
 value.SHADOW_FILTER.0=Один отсчёт
 value.SHADOW_FILTER.1=PCF 3×3
 value.SHADOW_FILTER.2=PCF 5×5
+
+option.TAA_JITTER=Субпиксельный сдвиг TAA
+option.TAA_JITTER.comment=По умолчанию выключен для стабильной картинки. Включение добавляет сдвиг выборки между кадрами.
