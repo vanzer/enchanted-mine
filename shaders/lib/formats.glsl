@@ -1,7 +1,9 @@
 #ifndef ENCHANTED_FORMATS
 #define ENCHANTED_FORMATS
-// OpenGL internal formats are not built-in GLSL identifiers.
+// Keep the symbolic token in *Format directives for Iris's directive parser.
+// A preprocessor macro would replace it before Iris reads the format name.
+// GLSL still needs a constant declaration because this is not a built-in enum.
 #ifndef RGBA16F
-#define RGBA16F 0x881A
+const int RGBA16F = 34842;
 #endif
 #endif
