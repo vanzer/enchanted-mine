@@ -1,5 +1,7 @@
 #ifndef ENCHANTED_SETTINGS
 #define ENCHANTED_SETTINGS
+// Master switch for screen-space effects; independent of quality profiles.
+#define RTX 1 // [0 1]
 #define REFLECTION_STEPS 32 // [16 32 64]
 #define REFLECTION_STRENGTH 0.8 // [0.0 0.4 0.6 0.8 1.0]
 #define REFLECTION_MINIMUM 0.12 // [0.0 0.04 0.08 0.12 0.2]

@@ -102,6 +102,7 @@ vec3 reflectionColor(vec3 position, vec3 normal, bool water, vec3 worldSun) {
                                         rainStrength, skyColor, fogColor);
 #endif
     if (isEyeInWater == 1) reflected = mix(reflected, vec3(0.012, 0.07, 0.09), 0.9);
+#if RTX == 1
     vec3 origin = position + normal * 0.08;
     vec3 previousRay = origin;
     float previousDelta = -1.0;
@@ -140,6 +141,7 @@ vec3 reflectionColor(vec3 position, vec3 normal, bool water, vec3 worldSun) {
         previousDelta = valid > 0.5 ? delta : -1.0;
         previousRay = ray;
     }
+#endif
     return reflected;
 }
 void main() {
@@ -165,9 +167,11 @@ void main() {
             float nearDepth = texture2D(depthtex0, uv).r;
             if (nearDepth < 1.0 && abs(positionAt(uv, nearDepth).z - position.z) < 0.01) {
                 color *= ambientOcclusion(depthtex0, projection, inverseProjection, uv, viewport(), position, normal);
+#if RTX == 1
                 color *= 1.0 + indirectBounce(uv, position, normal, depthtex0, colortex1, colortex0, projection, inverseProjection);
 #if !defined(DIM_NETHER) && !defined(DIM_END)
                 color *= contactShadow(position, normal, shadowLightPosition, depthtex0, projection, inverseProjection);
+#endif
 #endif
             }
         }
